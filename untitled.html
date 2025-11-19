@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Journey: 20 Years of Love</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS (for the Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'romance-red': '#e11d48',
+                        'soft-pink': '#ffe4e6',
+                        'gold': '#fbbf24',
+                        'deep-bg': '#fff1f2',
+                    },
+                    fontFamily: {
+                        'cursive': ['"Dancing Script"', 'cursive'],
+                        'body': ['"Nunito"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fff1f2;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Floating Hearts Animation */
+        .heart-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .heart-particle {
+            position: absolute;
+            color: rgba(225, 29, 72, 0.2);
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Photo Card Hover Effect */
+        .photo-card {
+            break-inside: avoid;
+            margin-bottom: 2rem;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            scroll-margin-top: 100px; /* Offset for sticky header when scrolling */
+        }
+        .photo-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            z-index: 10;
+        }
+
+        /* Polaroid Style */
+        .polaroid {
+            background: white;
+            padding: 1rem; 
+            padding-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .polaroid img {
+            object-fit: cover;
+            height: 300px; /* Fixed height for consistency */
+            width: 100%;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffe4e6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e11d48;
+            border-radius: 5px;
+        }
+
+        #map {
+            height: 600px; /* Made taller for better view */
+            width: 100%;
+            z-index: 1;
+            border-radius: 1rem;
+            border: 4px solid white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            padding: 5px;
+        }
+        .leaflet-popup-content {
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+        }
+        .popup-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .view-photo-btn {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 4px 10px;
+            background-color: #e11d48;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .view-photo-btn:hover {
+            background-color: #be123c;
+        }
+
+        /* Shuffle Button */
+        .shuffle-btn {
+            background-color: #fbbf24;
+            color: #854d0e;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shuffle-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }
+    </style>
+</head>
+<body class="text-gray-800 relative">
+
+    <!-- Background Animation Layer -->
+    <div class="heart-bg" id="heart-bg"></div>
+
+    <!-- Navigation / Header -->
+    <header class="relative z-10 bg-white/80 backdrop-blur-md sticky top-0 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-3xl font-cursive text-romance-red font-bold">
+                <i class="fas fa-heart mr-2 animate-pulse"></i> Our 20 Year Journey
+            </div>
+            <nav class="hidden md:flex space-x-8 font-semibold text-gray-600">
+                <a href="#memories" class="hover:text-romance-red transition">Memories</a>
+                <a href="#map-section" class="hover:text-romance-red transition">Our World</a>
+                <a href="#timeline" class="hover:text-romance-red transition">Timeline</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-[80vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <!-- Using a nice scenic photo as Hero Background -->
+            <img src="IMG_1504.jpg" 
+                 class="w-full h-full object-cover opacity-50" 
+                 alt="Romantic Background">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-deep-bg"></div>
+        </div>
+        
+        <div class="relative z-10 text-center px-4">
+            <h1 class="text-6xl md:text-8xl font-cursive text-romance-red mb-6 drop-shadow-sm">
+                Nov 19, 2005
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-700 mb-8 max-w-2xl mx-auto italic">
+                "Twenty years of love, laughter, and adventure. Here's to the next chapter."
+            </p>
+            <div class="bg-white/90 backdrop-blur px-8 py-4 rounded-full inline-block shadow-lg">
+                <span class="text-gray-500 uppercase tracking-widest text-xs font-bold block mb-1">Together For</span>
+                <div id="counter" class="text-2xl md:text-3xl font-bold text-romance-red font-mono">
+                    Calculating...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map-section" class="py-20 bg-white relative z-10">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-10">
+                 <h2 class="text-4xl font-cursive text-romance-red mb-2">Our World Map</h2>
+                 <p class="text-gray-600">Click a marker to revisit the moment.</p>
+            </div>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="memories" class="py-20 relative z-10 container mx-auto px-4">
+        <div class="text-center mb-8">
+            <h2 class="text-5xl font-cursive text-gray-800 mb-4">Cherished Moments</h2>
+            <div class="w-24 h-1 bg-romance-red mx-auto rounded-full mb-6"></div>
+            <button onclick="shuffleGallery()" class="shuffle-btn">
+                <i class="fas fa-random"></i> Shuffle Memories
+            </button>
+        </div>
+
+        <!-- Masonry-like Grid -->
+        <div id="gallery-grid" class="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+            
+            <!-- 2005-2010: The Beginning -->
+            <div class="photo-card group" id="photo-highschool">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="00420006.jpg" alt="High School">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Before It All Began</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">High School - Before Nov 2005</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-negev">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="P3180292.jpg" alt="Negev">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Young Love</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Negev, Israel - Mar 18, 2006</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-brazil">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_1001 - Copy.jpg" alt="Brazil">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">South America Trip</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Brazil - Feb 2008</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-peru">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_1504.jpg" alt="Peru">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Desert Dunes</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Peru - Mar 2008</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-modiin">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_2140.jpg" alt="Modiin">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Home</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Near Modiin - Apr 2008</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-telaviv08">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_2763.jpg" alt="Tel Aviv">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">City Life</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - Aug 2008</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-israel10">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3726.jpg" alt="Israel">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Just Us</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Israel - Apr 2010</p>
+                </div>
+            </div>
+
+            <!-- PROPOSAL -->
+            <div class="photo-card group" id="photo-proposal">
+                <div class="polaroid rotate-2 border-4 border-romance-red">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4257.jpg" alt="Proposal">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-romance-red font-bold">She Said Yes!</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - Nov 19, 2010</p>
+                </div>
+            </div>
+
+            <!-- 2011: The Wedding & Honeymoon -->
+            <div class="photo-card group" id="photo-wedding">
+                <div class="polaroid rotate-2 bg-yellow-50 border-4 border-gold">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="LR-0101.jpg" alt="Wedding">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-romance-red font-bold">Our Wedding Day</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Sep 1, 2011</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-mexico-1">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4958.jpg" alt="Mexico">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Honeymoon Kiss</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Mexico - Sep 2011</p>
+                </div>
+            </div>
+
+             <div class="photo-card group" id="photo-mexico-2">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4970.jpg" alt="Mexico 2">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Summer Love</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Mexico - Sep 2011</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-mexico-3">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_5145.jpg" alt="Mexico 3">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Beach Kiss</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Mexico - Sep 2011</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-mexico-4">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_5631.jpg" alt="Mexico">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Paradise</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Mexico - Oct 2011</p>
+                </div>
+            </div>
+
+            <!-- 2012-2016: Travels & New Home -->
+            <div class="photo-card group" id="photo-banias">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7288.jpg" alt="Banias">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">River Relaxing</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Banias River - Sep 2012</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-madrid-1">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7435.jpg" alt="Madrid">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Spanish Kiss</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Madrid - Oct 2015</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-madrid-2">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7595.jpg" alt="Madrid 2">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Green Wall</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Madrid - Oct 2015</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-merida">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7723.jpg" alt="Merida">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Malaga Sun</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Malaga, Spain - Oct 2015</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-newhome">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_5194.JPG" alt="New House">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Our New Home</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Dec 2015</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-winefest">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_6077.JPG" alt="Wine Festival">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Wine Festival</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Sep 2016</p>
+                </div>
+            </div>
+
+             <div class="photo-card group" id="photo-nola-1">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_0140.jpg" alt="NOLA 1">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">True Love</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">New Orleans - Nov 2016</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-nola-2">
+                <div class="polaroid -rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_9470.jpg" alt="New Orleans">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Jazz & Joy</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">New Orleans - Nov 2016</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-paris">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20161118_153442694.jpg" alt="Paris">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">City of Lights</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Paris - Nov 2016</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-jerusalem16">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20161214_084806016_BURST000_COVER_TOP.jpg" alt="Jerusalem 16">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Cozy & Warm</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Dec 2016</p>
+                </div>
+            </div>
+
+            <!-- 2017: Expecting Gali -->
+            
+             <div class="photo-card group" id="photo-jerusalem17">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20170302_234617796.jpg" alt="Jerusalem 17">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Silly Moments</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Mar 2017</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-preg-1">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20170908_173337171.jpg" alt="Pregnancy">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Waiting for Gali</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - Sep 2017</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-preg-2">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20170922_090906394.jpg" alt="Pregnancy 2">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Baby on Board</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Sep 2017</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-hospital">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20171111_223303594.jpg" alt="Hospital">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Night Before Birth</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Nov 11, 2017</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-gali-born">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_20171208_102129216.jpg" alt="Gali Baby">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Welcome Gali</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Dec 2017</p>
+                </div>
+            </div>
+
+            <!-- 2018-2020: Family Adventures -->
+            <div class="photo-card group" id="photo-barcelona">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_1037.jpg" alt="Airport">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Off to Barcelona</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Mar 2018</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-gali-home">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="1d3985fe-b1d9-4cc6-9993-d3a4f6bdc183.jpg" alt="Home with Gali">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Home Sweet Home</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Aug 2018</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-crete">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_2610.jpg" alt="Crete">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Greek Island Life</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Crete - Aug 2018</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-hadera">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4710.jpg" alt="Hadera">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Flower Power</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Hadera - May 2019</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-jerusalem19">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_5003.jpg" alt="Jerusalem">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Family Fun</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Jun 2019</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-jerusalem20-1">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3052.jpg" alt="Jerusalem 20">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Morning Snuggle</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Apr 2020</p>
+                </div>
+            </div>
+
+             <div class="photo-card group" id="photo-jerusalem20-2">
+                <div class="polaroid -rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3129.jpg" alt="Masks">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">COVID Times</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - May 2020</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-herzliya">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_9409.jpg" alt="Herzliya">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Beach Smiles</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Herzliya - Jul 2020</p>
+                </div>
+            </div>
+
+            <!-- 2021-Present: Uri Arrives & More Travels -->
+            <div class="photo-card group" id="photo-uri-birth">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_6364.jpg" alt="Uri Birth">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Waiting for Uri</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Jul 27, 2021</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-uri-baby">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7025.jpg" alt="Uri Baby">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Family of Four</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Sep 2021</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-sinai">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="5FA53DE9-6BB3-46DC-AF44-787D3845EE79.jpg" alt="Sinai">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Sinai Adventure</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Sinai - Apr 2022</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-eingedi">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_6679.jpg" alt="Ein Gedi">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Waterfall Hike</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Ein Gedi - May 2022</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-telaviv22">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7739.jpg" alt="Tel Aviv 22">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Exploring History</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - Jun 2022</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-lefkada">
+                <div class="polaroid -rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_8755.jpg" alt="Lefkada">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Lefkada Blue</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Greece - Aug 2022</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-telaviv22-2">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_9160.jpg" alt="Tel Aviv 22-2">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Family Splash</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - Oct 2022</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-italy">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3580.jpg" alt="Italy">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Italian Sunset</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Toscolano Maderno - Oct 2023</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-venice">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3647.jpg" alt="Venice">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Venice Magic</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Venice - Oct 2023</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-jerusalem23">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4307.jpg" alt="Jerusalem 23">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Winter Kiss</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Dec 2023</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-jerusalem24">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_4523.jpg" alt="Jerusalem 24">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Peaceful</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Jan 2024</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-jerusalem24-2">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_6473.jpg" alt="Jerusalem 24-2">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Party Time</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Jerusalem - Apr 2024</p>
+                </div>
+            </div>
+            
+            <div class="photo-card group" id="photo-telaviv24">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_5992.jpg" alt="Tel Aviv 24">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Beach Day</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Tel Aviv - 2024</p>
+                </div>
+            </div>
+
+            <div class="photo-card group" id="photo-eilon">
+                <div class="polaroid rotate-3">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_2509.jpg" alt="Uri 2 Years">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Uri's 2nd Birthday</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Eilon Kibbutz - Jul 2024</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-kfar">
+                <div class="polaroid -rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_7367.jpg" alt="Kfar Hanokdim">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Desert Camping</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Kfar Hanokdim - Aug 2024</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-eingedi24">
+                <div class="polaroid rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_8326.jpg" alt="Ein Gedi 24">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Oasis</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Ein Gedi - Aug 2024</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-gali7">
+                <div class="polaroid -rotate-1">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_8662.jpg" alt="Gali 7th Birthday">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Gali's 7th Birthday</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Nov 2024</p>
+                </div>
+            </div>
+            
+             <div class="photo-card group" id="photo-austria">
+                <div class="polaroid rotate-2">
+                    <div class="overflow-hidden rounded mb-3">
+                        <img src="IMG_3012.jpg" alt="Austria">
+                    </div>
+                    <p class="text-center font-cursive text-2xl text-gray-700">Future Adventures</p>
+                    <p class="text-center text-xs text-gray-400 mt-1">Austria - Aug 2025</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="py-20 container mx-auto px-4 relative z-10">
+        <div class="text-center mb-16">
+            <h2 class="text-5xl font-cursive text-gray-800">Our Story</h2>
+        </div>
+        
+        <div class="max-w-4xl mx-auto relative">
+            <!-- Vertical Line -->
+            <div class="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-pink-200"></div>
+
+            <!-- Event 1 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12 text-right pr-8">
+                    <h3 class="text-2xl font-bold text-gray-800">We Started Dating</h3>
+                    <p class="text-gray-500">Nov 19, 2005</p>
+                    <p class="mt-2 text-sm text-gray-600">The beginning of forever.</p>
+                </div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-romance-red rounded-full border-4 border-white shadow"></div>
+                <div class="w-5/12 pl-8"></div>
+            </div>
+
+            <!-- Proposal -->
+             <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12"></div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border-4 border-romance-red rounded-full shadow"></div>
+                <div class="w-5/12 pl-8 text-left">
+                    <h3 class="text-2xl font-bold text-gray-800">The Proposal</h3>
+                    <p class="text-gray-500">Nov 19, 2010</p>
+                    <p class="mt-2 text-sm text-gray-600">Tel Aviv</p>
+                </div>
+            </div>
+
+            <!-- Event 2 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12 text-right pr-8">
+                    <h3 class="text-2xl font-bold text-gray-800">Our Wedding</h3>
+                    <p class="text-gray-500">Sep 1, 2011</p>
+                    <p class="mt-2 text-sm text-gray-600">Jerusalem.</p>
+                </div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-romance-red rounded-full border-4 border-white shadow"></div>
+                <div class="w-5/12 pl-8"></div>
+            </div>
+
+             <!-- Home -->
+             <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12"></div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border-4 border-romance-red rounded-full shadow"></div>
+                <div class="w-5/12 pl-8 text-left">
+                    <h3 class="text-2xl font-bold text-gray-800">Bought Our Home</h3>
+                    <p class="text-gray-500">Dec 2015</p>
+                    <p class="mt-2 text-sm text-gray-600">Jerusalem</p>
+                </div>
+            </div>
+
+             <!-- Event 3 -->
+             <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12 text-right pr-8">
+                    <h3 class="text-2xl font-bold text-gray-800">Gali is Born</h3>
+                    <p class="text-gray-500">Nov 12, 2017</p>
+                    <p class="mt-2 text-sm text-gray-600">Our first miracle.</p>
+                </div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-romance-red rounded-full border-4 border-white shadow"></div>
+                <div class="w-5/12 pl-8"></div>
+            </div>
+            
+             <!-- Event 4 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12"></div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border-4 border-romance-red rounded-full shadow"></div>
+                <div class="w-5/12 pl-8 text-left">
+                    <h3 class="text-2xl font-bold text-gray-800">Uri is Born</h3>
+                    <p class="text-gray-500">Jul 27, 2021</p>
+                    <p class="mt-2 text-sm text-gray-600">Completing our family.</p>
+                </div>
+            </div>
+
+            <!-- Event 5 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12 text-right pr-8">
+                    <h3 class="text-2xl font-bold text-gray-800">20 Years Together</h3>
+                    <p class="text-gray-500">Nov 19, 2025</p>
+                    <p class="mt-2 text-sm text-gray-600">Celebrating a lifetime of love.</p>
+                </div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-romance-red rounded-full border-4 border-white shadow"></div>
+                <div class="w-5/12 pl-8"></div>
+            </div>
+            
+             <!-- Future 1 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12"></div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border-4 border-romance-red rounded-full shadow"></div>
+                <div class="w-5/12 pl-8 text-left">
+                    <h3 class="text-2xl font-bold text-gray-800">Having Fun</h3>
+                    <p class="text-gray-500">Nov 2045</p>
+                    <p class="mt-2 text-sm text-gray-600">Still adventuring.</p>
+                </div>
+            </div>
+            
+             <!-- Future 2 -->
+            <div class="flex items-center justify-between w-full mb-8 relative">
+                <div class="w-5/12 text-right pr-8">
+                    <h3 class="text-2xl font-bold text-gray-800">Getting Old Together</h3>
+                    <p class="text-gray-500">Nov 2065</p>
+                    <p class="mt-2 text-sm text-gray-600">A lifetime of memories.</p>
+                </div>
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-romance-red rounded-full border-4 border-white shadow"></div>
+                <div class="w-5/12 pl-8"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-10 text-center relative z-10 border-t border-pink-100">
+        <div class="container mx-auto">
+            <p class="font-cursive text-3xl text-romance-red mb-4">Forever & Always</p>
+            <p class="text-gray-500 text-sm">Created with love.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS (Map Logic) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // --- 1. Map Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            var map = L.map('map').setView([31.7683, 35.2137], 2); // Start zoomed out to see world
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Custom Heart Icon
+            var heartIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='color:#e11d48; font-size:24px;'><i class='fas fa-heart'></i></div>",
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+
+            // Specific Locations from your data
+            // Added photo IDs to link map markers to photo cards
+            var locations = [
+                { coords: [30.8604, 34.7796], title: "Negev", note: "Young Love 2006", photoId: "photo-negev", img: "P3180292.jpg" },
+                { coords: [-14.2350, -51.9253], title: "Brazil", note: "Feb 2008", photoId: "photo-brazil", img: "IMG_1001 - Copy.jpg" },
+                { coords: [-9.1900, -75.0152], title: "Peru", note: "Mar 2008", photoId: "photo-peru", img: "IMG_1504.jpg" },
+                { coords: [31.8903, 35.0104], title: "Modiin", note: "Apr 2008", photoId: "photo-modiin", img: "IMG_2140.jpg" },
+                { coords: [32.0853, 34.7818], title: "Tel Aviv", note: "Multiple Memories", photoId: "photo-telaviv08", img: "IMG_2763.jpg" },
+                { coords: [32.0900, 34.7850], title: "The Proposal", note: "Nov 2010", photoId: "photo-proposal", img: "IMG_4257.jpg" },
+                { coords: [31.7683, 35.2137], title: "Jerusalem", note: "Wedding & Home", photoId: "photo-wedding", img: "LR-0101.jpg" },
+                { coords: [20.6534, -87.1332], title: "Mexico", note: "Honeymoon 2011", photoId: "photo-mexico-1", img: "IMG_4958.jpg" },
+                { coords: [33.2463, 35.6923], title: "Banias", note: "Sep 2012", photoId: "photo-banias", img: "IMG_7288.jpg" },
+                { coords: [40.4168, -3.7038], title: "Madrid", note: "Oct 2015", photoId: "photo-madrid-1", img: "IMG_7435.jpg" },
+                { coords: [36.7213, -4.4214], title: "Malaga, Spain", note: "Oct 2015", photoId: "photo-merida", img: "IMG_7723.jpg" },
+                { coords: [29.9511, -90.0715], title: "New Orleans", note: "Nov 2016", photoId: "photo-nola-1", img: "IMG_0140.jpg" },
+                { coords: [48.8566, 2.3522], title: "Paris", note: "Nov 2016", photoId: "photo-paris", img: "IMG_20161118_153442694.jpg" },
+                { coords: [41.3851, 2.1734], title: "Barcelona", note: "Mar 2018", photoId: "photo-barcelona", img: "IMG_1037.jpg" },
+                { coords: [35.2401, 24.8093], title: "Crete", note: "Aug 2018", photoId: "photo-crete", img: "IMG_2610.jpg" },
+                { coords: [32.4340, 34.9197], title: "Hadera", note: "May 2019", photoId: "photo-hadera", img: "IMG_4710.jpg" },
+                { coords: [32.1663, 34.8434], title: "Herzliya", note: "Jul 2020", photoId: "photo-herzliya", img: "IMG_9409.jpg" },
+                { coords: [31.4587, 35.3895], title: "Ein Gedi", note: "May 2022", photoId: "photo-eingedi", img: "IMG_6679.jpg" },
+                { coords: [29.5332, 34.6204], title: "Sinai", note: "Apr 2022", photoId: "photo-sinai", img: "5FA53DE9-6BB3-46DC-AF44-787D3845EE79.jpg" },
+                { coords: [38.7066, 20.6416], title: "Lefkada", note: "Aug 2022", photoId: "photo-lefkada", img: "IMG_8755.jpg" },
+                { coords: [45.6387, 10.6075], title: "Toscolano Maderno", note: "Oct 2023", photoId: "photo-italy", img: "IMG_3580.jpg" },
+                { coords: [45.4408, 12.3155], title: "Venice", note: "Oct 2023", photoId: "photo-venice", img: "IMG_3647.jpg" },
+                { coords: [33.0713, 35.2193], title: "Eilon Kibbutz", note: "Jul 2024", photoId: "photo-eilon", img: "IMG_2509.jpg" },
+                { coords: [31.3148, 35.2350], title: "Kfar Hanokdim", note: "Aug 2024", photoId: "photo-kfar", img: "IMG_7367.jpg" },
+                { coords: [47.5162, 14.5501], title: "Austria", note: "Aug 2025", photoId: "photo-austria", img: "IMG_3012.jpg" }
+            ];
+
+            locations.forEach(loc => {
+                var marker = L.marker(loc.coords, {icon: heartIcon}).addTo(map);
+                
+                // Create popup content with image and link
+                var popupContent = `
+                    <b>${loc.title}</b><br>
+                    ${loc.note}<br>
+                    <img src="${loc.img}" class="popup-img" onclick="document.getElementById('${loc.photoId}').scrollIntoView({behavior: 'smooth', block: 'center'})"><br>
+                    <a href="javascript:void(0)" onclick="document.getElementById('${loc.photoId}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="view-photo-btn">View Photo</a>
+                `;
+                
+                marker.bindPopup(popupContent);
+            });
+        });
+        
+        // --- Shuffle Function ---
+        function shuffleGallery() {
+            const container = document.getElementById('gallery-grid');
+            // Convert HTMLCollection to Array to easily manipulate
+            const cards = Array.from(container.children);
+            
+            // Shuffle array algorithm (Fisher-Yates shuffle)
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            
+            // Re-append children in new order
+            // This moves them in the DOM rather than duplicating
+            cards.forEach(card => {
+                container.appendChild(card);
+            });
+        }
+
+        // --- 2. "Time Together" Counter ---
+        function updateCounter() {
+            // Start date: Nov 19, 2005
+            // Month is 0-indexed (0 = Jan, 10 = Nov)
+            const startDate = new Date(2005, 10, 19); 
+            const now = new Date();
+            
+            const diff = now - startDate;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('counter').innerText = 
+                `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+        setInterval(updateCounter, 1000);
+        updateCounter();
+
+        // --- 3. Floating Hearts Background ---
+        function createHearts() {
+            const container = document.getElementById('heart-bg');
+            const heartCount = 20; 
+
+            for (let i = 0; i < heartCount; i++) {
+                createHeart(container);
+            }
+        }
+
+        function createHeart(container) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            
+            const left = Math.random() * 100;
+            const duration = Math.random() * 10 + 10; 
+            const delay = Math.random() * 5;
+            const size = Math.random() * 20 + 10; 
+
+            heart.style.left = `${left}%`;
+            heart.style.animationDuration = `${duration}s`;
+            heart.style.animationDelay = `-${delay}s`; 
+            heart.style.fontSize = `${size}px`;
+
+            container.appendChild(heart);
+        }
+        
+        createHearts();
+    </script>
+</body>
+</html>
